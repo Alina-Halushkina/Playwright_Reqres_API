@@ -1,16 +1,23 @@
 import {test, request, expect} from '@playwright/test';
-test.describe("API tests", () => {
-    test("Go to site", async ({request}) => {
-        const response = await request.get("https://reqres.in/");
-        expect(response.status()).toBe(200);
+
+const validateUser = (user: Array<any>) => {
+    expect(user).toMatchObject({
+        id: expect.any(Number),
+        email: expect.any(String),
+        first_name: expect.any(String),
+        last_name: expect.any(String),
+        avatar: expect.any(String)
     });
+}
+
+test.describe("API tests", () => {
 
     test("Get users", async ({request}) => {
         const response = await request.get("https://reqres.in/api/users?page=2");
         expect(response.status()).toBe(200);
         const responseBody = JSON.parse(await response.text());
         expect(responseBody.page).toBe(2);
-        expect(responseBody.data.length).toBe(6);
+        responseBody.data.forEach((user) => validateUser(user));
     });
 
     test("Get single user", async ({request}) => {
@@ -18,6 +25,9 @@ test.describe("API tests", () => {
         expect(response.status()).toBe(200);
         const responseBody = JSON.parse(await response.text());
         console.log(responseBody);
+
+        validateUser(responseBody.data);
+
         expect(responseBody.data.id).toBe(2);
         expect(responseBody.data.first_name).toBe("Janet");
     });
